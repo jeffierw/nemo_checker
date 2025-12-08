@@ -358,11 +358,6 @@ export function MultiAssetClaim() {
         <Flex direction="column" gap="4" my="4">
             <Heading size="4">Multi-Asset Claim Query</Heading>
 
-            {/* {!currentAccount && (
-                <Text color="red">Please connect wallet first</Text>
-            )} */
-                // Removed connect wallet warning as we support manual address input
-            }
 
             <Card>
                 <Flex direction="column" gap="3">

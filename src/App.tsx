@@ -21,7 +21,7 @@ function App() {
         </Box>
 
         <Box>
-          <ConnectButton />
+          {/* <ConnectButton /> */}
         </Box>
       </Flex>
       <Container>
@@ -31,11 +31,7 @@ function App() {
           px="4"
           style={{ background: "var(--gray-a2)", minHeight: 500 }}
         >
-          {currentAccount ? (
-            <MultiAssetClaim />
-          ) : (
-            <Heading>Please connect your wallet</Heading>
-          )}
+          <MultiAssetClaim />
         </Container>
       </Container>
     </>
