@@ -1,9 +1,8 @@
-import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
 import { Box, Container, Flex, Heading } from "@radix-ui/themes";
 import { MultiAssetClaim } from "./MultiAssetClaim";
 
 function App() {
-  const currentAccount = useCurrentAccount();
+  // const currentAccount = useCurrentAccount();
 
   return (
     <>
