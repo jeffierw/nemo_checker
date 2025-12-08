@@ -1,9 +1,9 @@
-import { ConnectButton, useCurrentAccount, useSignAndExecuteTransaction, useSuiClient } from "@mysten/dapp-kit";
+import { useSuiClient } from "@mysten/dapp-kit";
 import { SuiClient } from "@mysten/sui/client";
 import { Transaction } from "@mysten/sui/transactions";
 import { Table, Text, Button, Card, Flex, Tooltip, IconButton, Grid, Checkbox, Heading, TextArea } from "@radix-ui/themes";
 import { useState, useEffect } from "react";
-import { MAINNET_NEMO_PACKAGE_ID, MAINNET_REPAY_PACKAGE_ID, MAINNET_REPAY_REGISTRY_ID, ASSET_TYPES } from "./constants";
+import { MAINNET_REPAY_PACKAGE_ID, MAINNET_REPAY_REGISTRY_ID, ASSET_TYPES } from "./constants";
 
 const NEOM_TYPE = `${MAINNET_REPAY_PACKAGE_ID}::neom::NEOM`;
 
