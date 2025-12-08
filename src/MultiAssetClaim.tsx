@@ -407,7 +407,7 @@ export function MultiAssetClaim() {
                                     <Table.Row>
                                         <Table.ColumnHeaderCell>Asset Type</Table.ColumnHeaderCell>
                                         <Table.ColumnHeaderCell>Claimable LP</Table.ColumnHeaderCell>
-                                        <Table.ColumnHeaderCell>Underlying Value</Table.ColumnHeaderCell>
+                                        {/* <Table.ColumnHeaderCell>Underlying Value</Table.ColumnHeaderCell> */}
                                     </Table.Row>
                                 </Table.Header>
 
@@ -418,7 +418,7 @@ export function MultiAssetClaim() {
                                                 <BlockCopy text={row.type} />
                                             </Table.Cell>
                                             <Table.Cell>{row.amount}</Table.Cell>
-                                            <Table.Cell>{row.underlying}</Table.Cell>
+                                            {/* <Table.Cell>{row.underlying}</Table.Cell> */}
                                         </Table.Row>
                                     ))}
                                 </Table.Body>
