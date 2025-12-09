@@ -36,6 +36,11 @@ function BlockCopy({ text }: { text: string }) {
 // Include NEOM in the default list for selection
 const ALL_ASSETS = [...ASSET_TYPES];
 
+const SPECIAL_ASSETS_VAULT_MAP: Record<string, string> = {
+    "0x295d7f569467934c934e6101284628ecbbb1e68d5c5baa8d4667ff09c42068ad::suiusdt_usdc_nevlp::SUIUSDT_USDC_NEVLP": "0x18fe46d697a3ce2c87b62db5435678ff8df179efc913e250e888019d2f1c4105",
+    "0x7f29e761222a44b2141596e920edcc9049f8610f9d33f5354454d088e1f53b62::x_sui_sui_nevlp::X_SUI_SUI_NEVLP": "0x9356a36b0066561f66db7681d87537c8d9a992ca8e12095be91dcea500211015"
+};
+
 export function MultiAssetClaim() {
     const [addressesInput, setAddressesInput] = useState<string>("");
     // Default select all assets
@@ -194,6 +199,20 @@ export function MultiAssetClaim() {
         return null;
     };
 
+    const fetchVaultPrice = async (vaultId: string) => {
+        try {
+            const url = `https://api.nemoprotocol.com/api/v1/market/user/vaultInfo?vaultId=${vaultId}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data?.data && data.data.length > 0) {
+                return Number(data.data[0].vaultPrice);
+            }
+        } catch (e) {
+            console.error(`Error fetching vault price for ${vaultId}:`, e);
+        }
+        return 0;
+    };
+
     const toggleAsset = (asset: string) => {
         const newSet = new Set(selectedAssets);
         if (newSet.has(asset)) {
@@ -279,7 +298,7 @@ export function MultiAssetClaim() {
                             addressResults.push({
                                 type: NEOM_TYPE,
                                 amount: amountNum.toFixed(4),
-                                underlying: "0"
+                                underlying: "-"
                             });
                         }
                     }
@@ -292,30 +311,42 @@ export function MultiAssetClaim() {
                                 const res = result.results![index + 1];
                                 let amountRaw = "0";
                                 let amountStr = "0";
+                                let amountNum = 0;
                                 const dec = decimalsMap[asset] || 9;
 
                                 if (res?.returnValues) {
                                     const bytes = res.returnValues[0][0];
                                     amountRaw = decodeU64(bytes);
-                                    amountStr = (Number(amountRaw) / Math.pow(10, dec)).toFixed(4);
+                                    amountNum = Number(amountRaw) / Math.pow(10, dec);
+                                    amountStr = amountNum.toFixed(4);
                                 }
 
                                 // Skip if amount is effectively zero
-                                if (Number(amountStr) === 0) return null;
+                                if (amountNum <= 0) return null;
 
-                                let underlyingVal = "0";
+                                let underlyingVal = "-";
 
-                                const marketId = marketMap[asset];
-                                if (marketId) {
-                                    const state = await fetchMarketState(marketId);
-                                    if (state && state.lp_supply > 0) {
-                                        const userLp = BigInt(amountRaw);
-                                        const userSy = (userLp * state.total_sy) / state.lp_supply;
-                                        const userPt = (userLp * state.total_pt) / state.lp_supply;
-                                        const syUnderlying = Number(userSy) * state.py_index;
-                                        const ptUnderlying = Number(userPt);
-                                        const totalAppr = syUnderlying + ptUnderlying;
-                                        underlyingVal = (totalAppr / Math.pow(10, dec)).toFixed(4);
+                                // Special handling for Nemo Vault assets
+                                if (SPECIAL_ASSETS_VAULT_MAP[asset]) {
+                                    const vaultId = SPECIAL_ASSETS_VAULT_MAP[asset];
+                                    const price = await fetchVaultPrice(vaultId);
+                                    if (price > 0) {
+                                        const val = amountNum * price;
+                                        underlyingVal = `$${val.toFixed(2)}`;
+                                    }
+                                } else {
+                                    const marketId = marketMap[asset];
+                                    if (marketId) {
+                                        const state = await fetchMarketState(marketId);
+                                        if (state && state.lp_supply > 0) {
+                                            const userLp = BigInt(amountRaw);
+                                            const userSy = (userLp * state.total_sy) / state.lp_supply;
+                                            const userPt = (userLp * state.total_pt) / state.lp_supply;
+                                            const syUnderlying = Number(userSy) * state.py_index;
+                                            const ptUnderlying = Number(userPt);
+                                            const totalAppr = syUnderlying + ptUnderlying;
+                                            underlyingVal = (totalAppr / Math.pow(10, dec)).toFixed(4);
+                                        }
                                     }
                                 }
 
@@ -406,8 +437,8 @@ export function MultiAssetClaim() {
                                 <Table.Header>
                                     <Table.Row>
                                         <Table.ColumnHeaderCell>Asset Type</Table.ColumnHeaderCell>
-                                        <Table.ColumnHeaderCell>Claimable LP</Table.ColumnHeaderCell>
-                                        {/* <Table.ColumnHeaderCell>Underlying Value</Table.ColumnHeaderCell> */}
+                                        <Table.ColumnHeaderCell>Claimable Amount</Table.ColumnHeaderCell>
+                                        <Table.ColumnHeaderCell>Value (USD / Approx)</Table.ColumnHeaderCell>
                                     </Table.Row>
                                 </Table.Header>
 
@@ -418,7 +449,7 @@ export function MultiAssetClaim() {
                                                 <BlockCopy text={row.type} />
                                             </Table.Cell>
                                             <Table.Cell>{row.amount}</Table.Cell>
-                                            {/* <Table.Cell>{row.underlying}</Table.Cell> */}
+                                            <Table.Cell>{row.underlying}</Table.Cell>
                                         </Table.Row>
                                     ))}
                                 </Table.Body>
